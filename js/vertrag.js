@@ -216,6 +216,23 @@ async function generatePdf(){
   URL.revokeObjectURL(url);
 }
 
+function maybeIsoToDE(value) {
+  if (!value) return "";
+  const s = String(value).trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? isoToDE(s) : s;
+}
+
+function parseMinMaxHours(value) {
+  // expects formats like "7-9"
+  if (!value) return { min: "", max: "" };
+  const s = String(value).trim();
+  const m = s.match(/^\s*(\d+)\s*-\s*(\d+)\s*$/);
+  if (m) return { min: m[1], max: m[2] };
+  // fallback: if only one number exists
+  const one = s.match(/(\d+)/);
+  return { min: one ? one[1] : "", max: "" };
+}
+
 async function prefillIfTokenPresent() {
   const token = window.Prefill.getTokenFromUrl();
   if (!token) return;
@@ -252,9 +269,18 @@ async function prefillIfTokenPresent() {
     if (childFullAddress) els.childFullAddress.value = childFullAddress;
 
     if (data.voucherNumber) els.voucherNumber.value = String(data.voucherNumber);
-    if (data.voucherType) els.voucherType.value = String(data.voucherType);
+
+    if (data.voucherType.value) {
+      els.voucherType.value = String(data.voucherType);
+    } else if (!els.voucherType.value) {
+      els.voucherType.value = "Ganztagsplatz";
+    }
+
     if (voucherMinH) els.voucherMinH.value = voucherMinH;
     if (voucherMaxH) els.voucherMaxH.value = voucherMaxH;
+    if (els.voucherDate && data.voucherDate) {
+      els.voucherDate.value = maybeIsoToDE(data.voucherDate);
+    }
 
     if (parent1FullName) els.parent1.value = parent1FullName;
     if (parent2FullName) els.parent2.value = parent2FullName;
@@ -265,24 +291,6 @@ async function prefillIfTokenPresent() {
     setStatus("Konnte Daten nicht laden. Bitte Felder manuell ausfüllen.");
   }
 }
-
-function maybeIsoToDE(value) {
-  if (!value) return "";
-  const s = String(value).trim();
-  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? Utils.isoToDE(s) : s;
-}
-
-function parseMinMaxHours(value) {
-  // expects formats like "7-9"
-  if (!value) return { min: "", max: "" };
-  const s = String(value).trim();
-  const m = s.match(/^\s*(\d+)\s*-\s*(\d+)\s*$/);
-  if (m) return { min: m[1], max: m[2] };
-  // fallback: if only one number exists
-  const one = s.match(/(\d+)/);
-  return { min: one ? one[1] : "", max: "" };
-}
-
 
 prefillIfTokenPresent();
 
