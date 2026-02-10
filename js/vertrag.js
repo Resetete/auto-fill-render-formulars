@@ -60,17 +60,17 @@ const EXPECTED = {
     "parent_2_full_name",
   ],
   check: [
-    "consense_mail_communication",
-    "consense_signal_yes",
-    "consense_signal_no",
-    "consense_medical_check_yes",
-    "consense_medical_check_no",
-    "consense_data_usage_lists_yes",
-    "consense_data_usage_lists_no",
-    "consense_fotos_yes",
-    "consense_fotos_no",
-    "consense_foto_book_yes",
-    "consense_foto_book_no",
+    "consent_mail_communication",
+    "consent_signal_yes",
+    "consent_signal_no",
+    "consent_medical_check_yes",
+    "consent_medical_check_no",
+    "consent_data_usage_lists_yes",
+    "consent_data_usage_lists_no",
+    "consent_fotos_yes",
+    "consent_fotos_no",
+    "consent_foto_book_yes",
+    "consent_foto_book_no",
   ]
 };
 
@@ -99,17 +99,17 @@ function gather(){
     parent_2_full_name: clean(els.parent2.value),
 
     // checkboxes
-    consense_mail_communication: !!els.consentMail.checked,
-    consense_signal_yes: signal === "yes",
-    consense_signal_no: signal === "no",
-    consense_medical_check_yes: medical === "yes",
-    consense_medical_check_no: medical === "no",
-    consense_data_usage_lists_yes: lists === "yes",
-    consense_data_usage_lists_no: lists === "no",
-    consense_fotos_yes: photos === "yes",
-    consense_fotos_no: photos === "no",
-    consense_foto_book_yes: book === "yes",
-    consense_foto_book_no: book === "no",
+    consent_mail_communication: !!els.consentMail.checked,
+    consent_signal_yes: signal === "yes",
+    consent_signal_no: signal === "no",
+    consent_medical_check_yes: medical === "yes",
+    consent_medical_check_no: medical === "no",
+    consent_data_usage_lists_yes: lists === "yes",
+    consent_data_usage_lists_no: lists === "no",
+    consent_fotos_yes: photos === "yes",
+    consent_fotos_no: photos === "no",
+    consent_foto_book_yes: book === "yes",
+    consent_foto_book_no: book === "no",
   };
 }
 
