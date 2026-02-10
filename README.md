@@ -1,38 +1,61 @@
-# auto-fill-render-formulars (KiLa)
+# KiLa Hildegarten — Formulare (Hub)
 
-Diese Mini-App:
+Diese Mini-App ist für GitHub Pages gedacht und enthält:
 
-- lädt bei `?token=...` automatisch Kind-Daten via Cloudflare Worker
-- füllt das Formular vor
-- rendert das **Original Vertrags-PDF** client-side (pdf-lib)
-- Download → drucken → unterschreiben
-
-## Repo
-https://github.com/Resetete/auto-fill-render-formulars
-
-## Dateien
-- `index.html`
-- `style.css`
-- `app.js`
-- `templates/vertrag_template.pdf`
+- **Übersicht** (`index.html`)
+- **Betreuungsvertrag Generator** (`vertrag.html`) — füllt ein **AcroForm-PDF** per Feldnamen
+- **Token Generator** (`token.html`)
+- **Template-Feldprüfung**: zeigt Warnung, wenn im PDF Template erwartete Felder fehlen
 
 ## Konfiguration
-In `app.js` steht oben:
+In `js/config.js`:
 
-`const WORKER_BASE_URL = "https://kila-vertrag-worker.vorstandsarbeit-hildegarten.workers.dev";`
+- `WORKER_BASE_URL`: Cloudflare Worker Bridge (Token → Webling → JSON)
+- `TEMPLATE_URL`: Pfad zum Vertragstemplate (AcroForm)
 
-## GitHub Pages
+Aktuell:
+- `WORKER_BASE_URL = https://kila-vertrag-worker.vorstandsarbeit-hildegarten.workers.dev`
+- `TEMPLATE_URL = ./templates/vertrag_acroform_template.pdf`
+
+## Wichtig: Feldnamen im PDF
+Der Vertrag-Generator erwartet diese Felder im PDF:
+
+Textfelder:
+- `start_date`
+- `child_full_name`
+- `child_birthdate`
+- `child_full_address`
+- `voucher_date`
+- `voucher_number`
+- `voucher_type`
+- `voucher_min_h`
+- `voucher_max_h`
+- `parent_1_full_name`
+- `parent_2_full_name`
+
+Checkboxen:
+- `consense_mail_communication`
+- `consense_signal_yes`
+- `consense_signal_no`
+- `consense_medical_check_yes`
+- `consense_medical_check_no`
+- `consense_data_usage_lists_yes`
+- `consense_data_usage_lists_no`
+- `consense_fotos_yes`
+- `consense_fotos_no`
+- `consense_foto_book_yes`
+- `consense_foto_book_no`
+
+> Hinweis: In deinem Test-PDF existiert zusätzlich `child_fullname` (Duplikat). Die App füllt **nur** `child_full_name`.
+
+## GitHub Pages Deployment
 1. ZIP entpacken
-2. Dateien in dein Repo kopieren (root)
-3. GitHub → Settings → Pages
-4. Source: Deploy from a branch
-5. Branch: `main` / Folder: `/ (root)`
-6. Speichern → GitHub Pages URL erscheint
+2. Inhalt ins Repo kopieren (root)
+3. GitHub → Settings → Pages → Deploy from branch → `main` / root
+4. URL testen:
+   - Übersicht: `.../index.html`
+   - Vertrag: `.../vertrag.html?token=...`
+   - Token Tool: `.../token.html`
 
-## Test
-Wenn GitHub Pages live ist:
-
-`https://<user>.github.io/auto-fill-render-formulars/?token=<TOKEN>`
-
-## Worker / CORS
-Dein Worker muss CORS erlauben für deine GitHub Pages Origin (`ALLOWED_ORIGIN`).
+## Style
+Die Optik ist „hell + grün“ angelehnt an die KiLa-Webseite (Natur-/Garten-Vibe). Siehe https://www.kila-hildegarten.de citeturn0view0

@@ -3,170 +3,63 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>KiLa Hildegarten — Vertrag ausfüllen</title>
-  <meta name="description" content="Betreuungsvertrag Hildegarten: Formular ausfüllen → vollständiges Vertrags-PDF herunterladen → drucken & unterschreiben. Läuft komplett im Browser.">
+  <title>KiLa Hildegarten — Formulare</title>
+  <meta name="description" content="KiLa Hildegarten: Formulare online ausfüllen, PDF herunterladen, drucken & unterschreiben.">
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <header class="wrap header">
-    <div>
-      <h1>KiLa Hildegarten — Betreuungsvertrag ausfüllen</h1>
-      <p class="muted">Formular ausfüllen → Vertrags-PDF herunterladen → drucken & unterschreiben.</p>
-      <p class="note">
-        Datenschutz: Diese Seite speichert keine Daten auf einem Server. Alles passiert lokal im Browser.
-      </p>
+    <div class="brandRow">
+      <div class="brandMark" aria-hidden="true"></div>
+      <div>
+        <h1>KiLa Hildegarten — Formulare</h1>
+        <p class="muted">Ausfüllen → PDF herunterladen → drucken & unterschreiben.</p>
+      </div>
     </div>
+    <p class="note">
+      Datenschutz: Diese Seiten speichern keine Daten auf einem Server. Das PDF wird im Browser erzeugt.
+      (Einmaliges Laden von Stammdaten über einen Token-Link ist optional.)
+    </p>
   </header>
 
   <main class="wrap">
+    <section class="gridCards">
+      <a class="card linkCard" href="./vertrag.html">
+        <div class="cardTitle">📝 Betreuungsvertrag</div>
+        <div class="muted small">Formular ausfüllen & Vertrags-PDF generieren</div>
+      </a>
+
+      <a class="card linkCard" href="./token.html">
+        <div class="cardTitle">🔑 Token Generator</div>
+        <div class="muted small">Token erzeugen, kopieren & Direktlink bauen</div>
+      </a>
+    </section>
+
     <section class="card">
-      <h2>Kurzanleitung</h2>
+      <h2>Wie es funktioniert</h2>
       <ol class="muted small">
-        <li>Wenn du einen Link mit Token erhalten hast, werden die Daten automatisch geladen.</li>
-        <li>Prüfe/ergänze die Angaben unten.</li>
-        <li>Klicke auf <strong>„PDF herunterladen“</strong>.</li>
-        <li>Drucke das PDF aus und unterschreibe.</li>
+        <li>Öffne das gewünschte Formular.</li>
+        <li>Wenn du einen Token-Link hast, werden einige Felder automatisch vorbefüllt.</li>
+        <li>PDF herunterladen → drucken → unterschreiben.</li>
       </ol>
-      <p class="muted small">
-        Hinweis: Das erzeugte PDF ist euer <strong>Originalvertrag</strong>, nur mit den angegebenen Daten befüllt.
-      </p>
-    </section>
-
-    <section class="card">
-      <h2>Aufnahme</h2>
-
-      <div class="grid2">
-        <label class="field">
-          <span>Aufnahmedatum (1.1 „mit Wirkung zum…“)</span>
-          <input id="startDate" placeholder="TT.MM.JJJJ" inputmode="numeric" />
-        </label>
-
-        <label class="field">
-          <span>Platzumfang</span>
-          <select id="placeType">
-            <option value="teilzeit">Teilzeitplatz</option>
-            <option value="ganztag">Ganztagsplatz</option>
-          </select>
-        </label>
-
-        <label class="field">
-          <span>Vorname Kind</span>
-          <input id="childFirstName" autocomplete="given-name" />
-        </label>
-
-        <label class="field">
-          <span>Nachname Kind</span>
-          <input id="childLastName" autocomplete="family-name" />
-        </label>
-
-        <label class="field">
-          <span>Geburtsdatum Kind</span>
-          <input id="childBirthdate" placeholder="TT.MM.JJJJ" inputmode="numeric" />
-        </label>
-
-        <label class="field">
-          <span>Gutschein-Datum (Bescheid Jugendamt)</span>
-          <input id="voucherDate" placeholder="TT.MM.JJJJ" inputmode="numeric" />
-        </label>
-
-        <label class="field">
-          <span>Gutscheinnummer</span>
-          <input id="voucherNumber" placeholder="xx-xxxxxxxx-xx" />
-        </label>
-
-        <label class="field">
-          <span>Betreuungsstunden (optional)</span>
-          <input id="hours" placeholder="z. B. 7 bis höchstens 9 Stunden täglich" />
-        </label>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Eltern / Personensorge</h2>
-      <div class="grid2">
-        <label class="field">
-          <span>Elternteil 1 (voller Name)</span>
-          <input id="parent1" autocomplete="name" />
-        </label>
-        <label class="field">
-          <span>Elternteil 2 (voller Name, optional)</span>
-          <input id="parent2" autocomplete="name" />
-        </label>
-
-        <label class="field">
-          <span>Straße & Hausnr.</span>
-          <input id="street" autocomplete="street-address" />
-        </label>
-        <label class="field">
-          <span>PLZ & Ort</span>
-          <input id="city" placeholder="10715 Berlin" />
-        </label>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Anlage 1 — Einwilligungen (freiwillig)</h2>
-
-      <div class="checks">
-        <label class="check"><input type="checkbox" id="consentInfoMail" /> Übermittlung allgemeiner Informationen per Mail/Brief</label>
-
-        <div class="checkGroup">
-          <div class="muted small">Kitakommunikation „Signal“</div>
-          <label class="check"><input type="radio" name="signal" value="ja" id="consentSignalYes" /> Ja</label>
-          <label class="check"><input type="radio" name="signal" value="nein" id="consentSignalNo" /> Nein</label>
-        </div>
-
-        <div class="checkGroup">
-          <div class="muted small">Listen (Name Kind + Abholberechtigte)</div>
-          <label class="check"><input type="radio" name="lists" value="ja" id="consentListsYes" /> Ja</label>
-          <label class="check"><input type="radio" name="lists" value="nein" id="consentListsNo" /> Nein</label>
-        </div>
-
-        <div class="checkGroup">
-          <div class="muted small">Foto-/Videoaufnahmen intern (Doku/Entwicklung)</div>
-          <label class="check"><input type="radio" name="photo" value="ja" id="consentPhotoYes" /> Ja</label>
-          <label class="check"><input type="radio" name="photo" value="nein" id="consentPhotoNo" /> Nein</label>
-        </div>
-
-        <div class="checkGroup">
-          <div class="muted small">Jährliches Fotobuch (privat)</div>
-          <label class="check"><input type="radio" name="book" value="ja" id="consentBookYes" /> Ja</label>
-          <label class="check"><input type="radio" name="book" value="nein" id="consentBookNo" /> Nein</label>
-        </div>
-      </div>
-
-      <p class="muted small">
-        Hinweis: Die Einwilligungen sind freiwillig und können jederzeit widerrufen werden (siehe Vertrag).
-      </p>
-    </section>
-
-    <section class="card">
-      <h2>Ort & Datum</h2>
-      <div class="row">
-        <label class="field">
-          <span>Ort</span>
-          <input id="signCity" value="Berlin" />
-        </label>
-        <label class="field">
-          <span>Datum</span>
-          <input id="signDate" placeholder="TT.MM.JJJJ" inputmode="numeric" />
-        </label>
-      </div>
-
-      <div class="actions">
-        <button id="btnDownload" class="primary">PDF herunterladen</button>
-        <button id="btnReset" class="ghost" type="button">Felder leeren</button>
-      </div>
-
-      <p id="status" class="status" aria-live="polite"></p>
     </section>
 
     <footer class="wrap footer">
-      <p class="muted small">KiLa Hildegarten · Hildegardstr. 16a · 10715 Berlin</p>
+      <div class="footerGrid">
+        <div class="muted small">
+          Kinderladen Hildegarten · Hildegardstr. 16a · 10715 Berlin
+        </div>
+        <div class="muted small">
+          <a href="https://www.kila-hildegarten.de" target="_blank" rel="noreferrer">kila-hildegarten.de</a>
+        </div>
+      </div>
     </footer>
   </main>
-
-  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <script src="./app.js"></script>
 </body>
+<div class="topbar">
+  <div class="wrap topbarInner">
+    <div class="topbarTitle">KiLa Hildegarten — Formulare</div>
+    <a class="topbarLink" href="./index.html">Übersicht</a>
+  </div>
+</div>
 </html>
