@@ -7,6 +7,7 @@
 const { PDFDocument } = PDFLib;
 const { todayDE, isoToDE, clean, fileSafe } = window.Utils;
 
+// PDF fields
 const els = {
   startDate: document.getElementById("startDate"),
   childFullName: document.getElementById("childFullName"),
@@ -215,23 +216,76 @@ async function generatePdf(){
   URL.revokeObjectURL(url);
 }
 
-async function prefillIfTokenPresent(){
+function maybeIsoToDE(value) {
+  if (!value) return "";
+  const s = String(value).trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? isoToDE(s) : s;
+}
+
+function parseMinMaxHours(value) {
+  // expects formats like "7-9"
+  if (!value) return { min: "", max: "" };
+  const s = String(value).trim();
+  const m = s.match(/^\s*(\d+)\s*-\s*(\d+)\s*$/);
+  if (m) return { min: m[1], max: m[2] };
+  // fallback: if only one number exists
+  const one = s.match(/(\d+)/);
+  return { min: one ? one[1] : "", max: "" };
+}
+
+async function prefillIfTokenPresent() {
   const token = window.Prefill.getTokenFromUrl();
-  if(!token) return;
+  if (!token) return;
 
   try {
     setStatus("Daten werden geladen …");
     const data = await window.Prefill.loadByToken(token);
 
-    const fullName = [data.childFirstName, data.childLastName].filter(Boolean).join(" ");
+    const childFullName = [data.childFirstName, data.childLastName]
+      .filter(Boolean)
+      .join(" ");
+
     const zipCity = [data.zip, data.city].filter(Boolean).join(" ");
-    const fullAddress = [data.street, zipCity].filter(Boolean).join(", ");
+    const childFullAddress = [data.street, zipCity].filter(Boolean).join(", ");
 
-    if(fullName) els.childFullName.value = fullName;
-    if(data.childBirthdate) els.childBirthdate.value = isoToDE(data.childBirthdate);
-    if(fullAddress) els.childFullAddress.value = fullAddress;
+    const parent1FullName = [data.parent1FirstName, data.parent1LastName]
+      .filter(Boolean)
+      .join(" ");
 
-    setStatus("Daten geladen ✅ Bitte prüfen und ergänzen.");
+    const parent2FullName = [data.parent2FirstName, data.parent2LastName]
+      .filter(Boolean)
+      .join(" ");
+
+    // Hours: "7-9" -> min/max
+    const { min: voucherMinH, max: voucherMaxH } = parseMinMaxHours(
+      data.voucherMinMaxH
+    );
+
+    // Fill form inputs (NOT PDF yet — PDF is generated from these inputs later)
+    if (data.startDate) els.startDate.value = maybeIsoToDE(data.startDate);
+
+    if (childFullName) els.childFullName.value = childFullName;
+    if (data.childBirthdate) els.childBirthdate.value = maybeIsoToDE(data.childBirthdate);
+    if (childFullAddress) els.childFullAddress.value = childFullAddress;
+
+    if (data.voucherNumber) els.voucherNumber.value = String(data.voucherNumber);
+
+    if (data.voucherType.value) {
+      els.voucherType.value = String(data.voucherType);
+    } else if (!els.voucherType.value) {
+      els.voucherType.value = "Ganztagsplatz";
+    }
+
+    if (voucherMinH) els.voucherMinH.value = voucherMinH;
+    if (voucherMaxH) els.voucherMaxH.value = voucherMaxH;
+    if (els.voucherDate && data.voucherDate) {
+      els.voucherDate.value = maybeIsoToDE(data.voucherDate);
+    }
+
+    if (parent1FullName) els.parent1.value = parent1FullName;
+    if (parent2FullName) els.parent2.value = parent2FullName;
+
+    setStatus("Daten geladen. Bitte prüfen und ergänzen.");
   } catch (e) {
     console.error(e);
     setStatus("Konnte Daten nicht laden. Bitte Felder manuell ausfüllen.");
@@ -246,7 +300,7 @@ els.btnDownload.addEventListener("click", async () => {
     els.btnDownload.disabled = true;
     setStatus("Erstelle Vertrags-PDF …");
     await generatePdf();
-    setStatus("Fertig ✅ PDF heruntergeladen.");
+    setStatus("Fertig. PDF heruntergeladen.");
   } catch (e) {
     console.error(e);
     setStatus("Fehler beim Erstellen des PDFs.");
