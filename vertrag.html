@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KiLa Hildegarten — Betreuungsvertrag</title>
+  <meta name="description" content="Betreuungsvertrag Hildegarten: Formular ausfüllen → Vertrags-PDF herunterladen → drucken & unterschreiben.">
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="wrap header">
+    <div class="topNav">
+      <a class="backLink" href="./index.html">← Übersicht</a>
+    </div>
+
+    <div class="brandRow">
+      <div class="brandMark" aria-hidden="true"></div>
+      <div>
+        <h1>Betreuungsvertrag ausfüllen</h1>
+        <p class="muted">Formular ausfüllen → PDF herunterladen → drucken & unterschreiben.</p>
+      </div>
+    </div>
+
+    <div id="templateWarnings" class="warnBox" hidden></div>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Kurzanleitung</h2>
+      <ol class="muted small">
+        <li>Wenn du einen Link mit <code>?token=...</code> erhalten hast, werden Daten automatisch geladen.</li>
+        <li>Prüfe/ergänze die Angaben.</li>
+        <li>Klicke auf <strong>„PDF herunterladen“</strong>.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Aufnahme</h2>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Aufnahmedatum (1.1 „mit Wirkung zum…“)</span>
+          <input id="startDate" placeholder="TT.MM.JJJJ" inputmode="numeric" />
+        </label>
+
+        <label class="field">
+          <span>Name des Kindes (Vorname Nachname)</span>
+          <input id="childFullName" autocomplete="name" />
+        </label>
+
+        <label class="field">
+          <span>Geburtsdatum Kind</span>
+          <input id="childBirthdate" placeholder="TT.MM.JJJJ" inputmode="numeric" />
+        </label>
+
+        <label class="field">
+          <span>Adresse (Straße, PLZ Ort)</span>
+          <input id="childFullAddress" placeholder="Straße 1, 12345 Berlin" autocomplete="street-address" />
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Gutschein</h2>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Bescheiddatum Jugendamt</span>
+          <input id="voucherDate" placeholder="TT.MM.JJJJ" inputmode="numeric" />
+        </label>
+
+        <label class="field">
+          <span>Gutscheinnummer</span>
+          <input id="voucherNumber" placeholder="xx-xxxxxxxx-xx" />
+        </label>
+
+        <label class="field">
+          <span>Platztyp (Text im Vertrag)</span>
+          <input id="voucherType" placeholder="Teilzeitplatz / Ganztagsplatz" />
+        </label>
+
+        <label class="field">
+          <span>Stunden min</span>
+          <input id="voucherMinH" placeholder="z. B. 5 oder 7" inputmode="numeric" />
+        </label>
+
+        <label class="field">
+          <span>Stunden max</span>
+          <input id="voucherMaxH" placeholder="z. B. 7 oder 9" inputmode="numeric" />
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Eltern / Personensorge</h2>
+      <div class="grid2">
+        <label class="field">
+          <span>Elternteil 1 (voller Name)</span>
+          <input id="parent1" autocomplete="name" />
+        </label>
+        <label class="field">
+          <span>Elternteil 2 (voller Name, optional)</span>
+          <input id="parent2" autocomplete="name" />
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Anlage 1 — Einwilligungen (freiwillig)</h2>
+
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="consentMail" /> Übermittlung allgemeiner Informationen per Mail/Brief</label>
+
+        <div class="checkGroup">
+          <div class="muted small">Kitakommunikation „Signal“</div>
+          <label class="check"><input type="radio" name="signal" value="ja" id="signalYes" /> Ja</label>
+          <label class="check"><input type="radio" name="signal" value="nein" id="signalNo" /> Nein</label>
+        </div>
+
+        <div class="checkGroup">
+          <div class="muted small">Ärztliche & zahnärztliche Untersuchung</div>
+          <label class="check"><input type="radio" name="medical" value="ja" id="medicalYes" /> Ja</label>
+          <label class="check"><input type="radio" name="medical" value="nein" id="medicalNo" /> Nein</label>
+        </div>
+
+        <div class="checkGroup">
+          <div class="muted small">Listen (Name Kind + Abholberechtigte)</div>
+          <label class="check"><input type="radio" name="lists" value="ja" id="listsYes" /> Ja</label>
+          <label class="check"><input type="radio" name="lists" value="nein" id="listsNo" /> Nein</label>
+        </div>
+
+        <div class="checkGroup">
+          <div class="muted small">Foto-/Videoaufnahmen intern</div>
+          <label class="check"><input type="radio" name="photos" value="ja" id="photosYes" /> Ja</label>
+          <label class="check"><input type="radio" name="photos" value="nein" id="photosNo" /> Nein</label>
+        </div>
+
+        <div class="checkGroup">
+          <div class="muted small">Jährliches Fotobuch (privat)</div>
+          <label class="check"><input type="radio" name="book" value="ja" id="bookYes" /> Ja</label>
+          <label class="check"><input type="radio" name="book" value="nein" id="bookNo" /> Nein</label>
+        </div>
+      </div>
+
+      <p class="muted small">
+        Hinweis: Die Einwilligungen sind freiwillig und können jederzeit widerrufen werden.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Aktionen</h2>
+
+      <div class="actions">
+        <button id="btnDownload" class="primary">PDF herunterladen</button>
+        <button id="btnReset" class="ghost" type="button">Felder leeren</button>
+      </div>
+
+      <p id="status" class="status" aria-live="polite"></p>
+
+      <details class="details">
+        <summary>Debug / Template-Feldliste</summary>
+        <p class="muted small">Hier siehst du, welche Felder im PDF-Template erkannt wurden (hilfreich nach Template-Updates).</p>
+        <pre id="fieldDump" class="pre"></pre>
+      </details>
+    </section>
+
+    <footer class="wrap footer">
+      <div class="footerGrid">
+        <div class="muted small">
+          Kinderladen Hildegarten · Hildegardstr. 16a · 10715 Berlin
+        </div>
+        <div class="muted small">
+          <a href="https://www.kila-hildegarten.de" target="_blank" rel="noreferrer">kila-hildegarten.de</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="./js/config.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/prefill.js"></script>
+  <script src="./js/vertrag.js"></script>
+</body>
+<div class="topbar">
+  <div class="wrap topbarInner">
+    <a class="topbarLink" href="./index.html">← Übersicht</a>
+    <button class="topbarPrimary" onclick="document.getElementById('btnDownload').click()">
+      PDF herunterladen
+    </button>
+  </div>
+</div>
+</html>
