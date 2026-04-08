@@ -23,7 +23,8 @@ const els = {
   parent1: document.getElementById("parent1"),
   parent2: document.getElementById("parent2"),
 
-  consentMail: document.getElementById("consentMail"),
+  mailYes: document.getElementById("mailYes"),
+  mailNo: document.getElementById("mailNo"),
   signalYes: document.getElementById("signalYes"),
   signalNo: document.getElementById("signalNo"),
   medicalYes: document.getElementById("medicalYes"),
