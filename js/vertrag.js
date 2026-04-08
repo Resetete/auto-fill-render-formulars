@@ -77,6 +77,7 @@ const EXPECTED = {
 function setStatus(msg){ els.status.textContent = msg; }
 
 function gather(){
+  const mail = els.mailYes.checked ? "yes" : (els.mailNo.checked ? "no" : "");
   const signal = els.signalYes.checked ? "yes" : (els.signalNo.checked ? "no" : "");
   const medical = els.medicalYes.checked ? "yes" : (els.medicalNo.checked ? "no" : "");
   const lists = els.listsYes.checked ? "yes" : (els.listsNo.checked ? "no" : "");
@@ -98,8 +99,9 @@ function gather(){
     parent_1_full_name: clean(els.parent1.value),
     parent_2_full_name: clean(els.parent2.value),
 
-    // checkboxes
-    consent_mail_communication: !!els.consentMail.checked,
+    // radio buttons
+    consent_mail_communication_yes: mail === "yes",
+    consent_mail_communication_no: mail === "no",
     consent_signal_yes: signal === "yes",
     consent_signal_no: signal === "no",
     consent_medical_check_yes: medical === "yes",
