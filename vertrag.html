@@ -110,7 +110,11 @@
       <h2>Anlage 1 — Einwilligungen (freiwillig)</h2>
 
       <div class="checks">
-        <label class="check"><input type="checkbox" id="consentMail" /> Übermittlung allgemeiner Informationen per Mail/Brief</label>
+        <div class="checkGroup">
+          <div class="muted small">Übermittlung allgemeiner Informationen per Mail/Brief</div>
+          <label class="check"><input type="radio" name="mail" value="ja" id="mailYes" /> Ja</label>
+          <label class="check"><input type="radio" name="mail" value="nein" id="mailNo" /> Nein</label>
+        </div>
 
         <div class="checkGroup">
           <div class="muted small">Kitakommunikation „Signal“</div>
