@@ -48,7 +48,7 @@ if(!els.startDate.value) els.startDate.value = todayDE();
 const EXPECTED = {
   text: [
     "start_date",
-    "child_full_name", // we will fill this; you currently also have child_fullname (duplicate) in the PDF
+    "child_full_name",
     "child_birthdate",
     "child_full_address",
     "voucher_date",
@@ -60,7 +60,8 @@ const EXPECTED = {
     "parent_2_full_name",
   ],
   check: [
-    "consent_mail_communication",
+    "consent_mail_communication_yes",
+    "consent_mail_communication_no",
     "consent_signal_yes",
     "consent_signal_no",
     "consent_medical_check_yes",
@@ -188,8 +189,12 @@ async function generatePdf(){
 
   // Text fields
   for (const name of EXPECTED.text) {
-    // Don't force optional fields; still set to "" if absent in data
-    setTextFieldSafe(form, name, data[name] ?? "");
+    const fields = form.getFields().filter(f => f.getName() === name);
+    for (const field of fields) {
+      if (field.constructor.name === "PDFTextField") {
+        field.setText(data[name] ?? "");
+      }
+    }
   }
 
   // Checkboxes
