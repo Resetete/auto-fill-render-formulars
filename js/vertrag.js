@@ -177,31 +177,34 @@ function setTextFieldSafe(form, name, value){
 }
 
 function checkBoxSafe(form, name, checked){
-  // The checkboxes in this PDF use /Yes as on-state and have a malformed
-  // stored value ("/") instead of "/Off", which causes pdf-lib's check()/uncheck()
-  // to throw. We set /V and /AS directly on the widget as a fallback.
+  // These checkboxes use a parent-field + single-widget-child pattern.
+  // pdf-lib's check()/uncheck() sets /V on the parent but doesn't always
+  // update /AS on the child widget, so the visual state doesn't render.
+  // We always set both /V (parent) and /AS (each widget) explicitly.
+  const { PDFName } = PDFLib;
+  const onState  = PDFName.of("Yes");
+  const offState = PDFName.of("Off");
+  const target   = checked ? onState : offState;
+
   try {
+    // Step 1: set the field value via high-level API (updates /V on parent)
     const cb = form.getCheckBox(name);
     if (checked) cb.check(); else cb.uncheck();
-    return true;
-  } catch (e) {
-    try {
-      const { PDFName } = PDFLib;
-      const onState  = PDFName.of("Yes");
-      const offState = PDFName.of("Off");
-      const target   = checked ? onState : offState;
-      const fields   = form.getFields().filter(f => f.getName() === name);
-      for (const field of fields) {
-        try { field.acroField.setValue(target); } catch(_) {}
-        const widgets = field.acroField.getWidgets ? field.acroField.getWidgets() : [];
-        for (const w of widgets) {
-          try { w.setAppearanceState(target); } catch(_) {}
-        }
+  } catch(_) {}
+
+  try {
+    // Step 2: always force /AS on every widget child so it visually renders
+    const fields = form.getFields().filter(f => f.getName() === name);
+    for (const field of fields) {
+      try { field.acroField.setValue(target); } catch(_) {}
+      const widgets = field.acroField.getWidgets ? field.acroField.getWidgets() : [];
+      for (const w of widgets) {
+        try { w.setAppearanceState(target); } catch(_) {}
       }
-      return true;
-    } catch (e2) {
-      return false;
     }
+    return true;
+  } catch(e) {
+    return false;
   }
 }
 
