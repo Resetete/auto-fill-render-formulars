@@ -191,12 +191,22 @@ async function generatePdf(){
   const form = pdfDoc.getForm();
   const data = gather();
 
-  // Text fields
+  // Text fields — use setTextFieldSafe which uses getTextField() directly,
+  // pdf-lib misidentifies as PDFRadioGroup instead of PDFTextField.
   for (const name of EXPECTED.text) {
-    const fields = form.getFields().filter(f => f.getName() === name);
-    for (const field of fields) {
-      if (field.constructor.name === "PDFTextField") {
-        field.setText(data[name] ?? "");
+    const matchingFields = form.getFields().filter(f => f.getName() === name);
+    if (matchingFields.length > 0) {
+      // Try the high-level API first; fall back to raw setValue on each widget
+      const filled = setTextFieldSafe(form, name, data[name] ?? "");
+      if (!filled) {
+        // If getTextField() failed (field mistyped by pdf-lib), set value directly
+        for (const field of matchingFields) {
+          try {
+            field.acroField.setValue(PDFLib.PDFString.of(data[name] ?? ""));
+          } catch (e) {
+            // ignore individual field errors
+          }
+        }
       }
     }
   }
