@@ -169,31 +169,26 @@ async function loadTemplateAndInspect(){
 }
 
 function setTextFieldSafe(form, name, value){
-  // child_full_name has 10 separate independent field entries (one per page occurrence).
-  // pdf-lib's getTextField() only finds the first — we iterate ALL matching fields
-  // and set /V directly on both the field object and its widget child.
-  const { PDFString, PDFName } = PDFLib;
-  const strVal = PDFString.of(value ?? "");
+  // child_full_name has 10 separate independent field entries (one per page).
+  // pdf-lib's high-level getTextField() + setText() only finds the first match.
+  // We get ALL matching fields and call setText() on each individually.
   const allFields = form.getFields().filter(f => f.getName() === name);
   for (const field of allFields) {
     try {
-      // Set /V on the parent field object
-      field.acroField.dict.set(PDFName.of("V"), strVal);
-      // Set /V on each widget child (where some viewers read the value from)
-      const widgets = field.acroField.getWidgets();
-      for (const w of widgets) {
-        try { w.dict.set(PDFName.of("V"), strVal); } catch(_) {}
-      }
-    } catch(e) {}
+      // PDFTextField.setText() is the correct public API — works on each instance
+      field.setText(value ?? "");
+    } catch(_) {
+      // If pdf-lib mistyped the field, fall back to setValue on the acroField
+      try { field.acroField.setValue(PDFLib.PDFString.of(value ?? "")); } catch(__) {}
+    }
   }
   return allFields.length > 0;
 }
 
 function checkBoxSafe(form, name, checked){
-  // Each checkbox is a parent field + 1 widget child.
-  // The visual tick is controlled by /AS on the WIDGET (not the parent).
-  // /V also lives on the widget (parent /V is None in this PDF).
-  // We set /V and /AS directly on the widget's dict.
+  // Each checkbox has /AS and /V on the WIDGET child, not the parent field.
+  // pdf-lib's check()/uncheck() sets /V on the parent but misses the widget /AS.
+  // We use the public setAppearanceState() API on each widget annotation.
   const { PDFName } = PDFLib;
   const onState  = PDFName.of("Yes");
   const offState = PDFName.of("Off");
@@ -201,16 +196,17 @@ function checkBoxSafe(form, name, checked){
 
   const fields = form.getFields().filter(f => f.getName() === name);
   for (const field of fields) {
-    // Also set /V on the parent for completeness
-    try { field.acroField.dict.set(PDFName.of("V"), target); } catch(_) {}
-    // Set /V and /AS on each widget child — this is what controls rendering
+    // Step 1: high-level check/uncheck to set parent /V
+    try {
+      if (checked) field.check(); else field.uncheck();
+    } catch(_) {}
+    // Step 2: explicitly set /AS on each widget via public API
     try {
       const widgets = field.acroField.getWidgets();
       for (const w of widgets) {
-        w.dict.set(PDFName.of("AS"), target);
-        w.dict.set(PDFName.of("V"),  target);
+        try { w.setAppearanceState(target); } catch(_) {}
       }
-    } catch(e) {}
+    } catch(_) {}
   }
   return true;
 }
