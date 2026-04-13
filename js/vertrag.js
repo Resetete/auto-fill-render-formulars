@@ -177,12 +177,31 @@ function setTextFieldSafe(form, name, value){
 }
 
 function checkBoxSafe(form, name, checked){
+  // The checkboxes in this PDF use /Yes as on-state and have a malformed
+  // stored value ("/") instead of "/Off", which causes pdf-lib's check()/uncheck()
+  // to throw. We set /V and /AS directly on the widget as a fallback.
   try {
     const cb = form.getCheckBox(name);
     if (checked) cb.check(); else cb.uncheck();
     return true;
   } catch (e) {
-    return false;
+    try {
+      const { PDFName } = PDFLib;
+      const onState  = PDFName.of("Yes");
+      const offState = PDFName.of("Off");
+      const target   = checked ? onState : offState;
+      const fields   = form.getFields().filter(f => f.getName() === name);
+      for (const field of fields) {
+        try { field.acroField.setValue(target); } catch(_) {}
+        const widgets = field.acroField.getWidgets ? field.acroField.getWidgets() : [];
+        for (const w of widgets) {
+          try { w.setAppearanceState(target); } catch(_) {}
+        }
+      }
+      return true;
+    } catch (e2) {
+      return false;
+    }
   }
 }
 
@@ -192,7 +211,9 @@ async function generatePdf(){
   const data = gather();
 
   // Text fields — use setTextFieldSafe which uses getTextField() directly,
+  // bypassing the constructor name check that was silently skipping fields
   // pdf-lib misidentifies as PDFRadioGroup instead of PDFTextField.
+  // We iterate all fields with the same name (handles duplicates like child_full_name).
   for (const name of EXPECTED.text) {
     const matchingFields = form.getFields().filter(f => f.getName() === name);
     if (matchingFields.length > 0) {
