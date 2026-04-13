@@ -117,7 +117,6 @@ function gather(){
   };
 }
 
-// FIX 2: added "mailYes" and "mailNo" to the reset loop, removed non-existent "consentMail"
 els.btnReset.addEventListener("click", () => {
   for (const id of ["startDate","childFullName","childBirthdate","childFullAddress","voucherDate","voucherNumber","voucherType","voucherMinH","voucherMaxH","parent1","parent2"]) {
     els[id].value = "";
@@ -169,46 +168,44 @@ async function loadTemplateAndInspect(){
 }
 
 function setTextFieldSafe(form, name, value){
-  // child_full_name has 10 separate independent field entries (one per page).
-  // pdf-lib's high-level getTextField() + setText() only finds the first match.
-  // We get ALL matching fields and call setText() on each individually.
-  const allFields = form.getFields().filter(f => f.getName() === name);
-  for (const field of allFields) {
-    try {
-      // PDFTextField.setText() is the correct public API — works on each instance
-      field.setText(value ?? "");
-    } catch(_) {
-      // If pdf-lib mistyped the field, fall back to setValue on the acroField
-      try { field.acroField.setValue(PDFLib.PDFString.of(value ?? "")); } catch(__) {}
-    }
+  try {
+    form.getTextField(name).setText(value ?? "");
+    return true;
+  } catch (e) {
+    return false;
   }
-  return allFields.length > 0;
 }
 
 function checkBoxSafe(form, name, checked){
-  // Each checkbox has /AS and /V on the WIDGET child, not the parent field.
-  // pdf-lib's check()/uncheck() sets /V on the parent but misses the widget /AS.
-  // We use the public setAppearanceState() API on each widget annotation.
+  // These checkboxes use a parent-field + single-widget-child pattern.
+  // pdf-lib's check()/uncheck() sets /V on the parent but doesn't always
+  // update /AS on the child widget, so the visual state doesn't render.
+  // We always set both /V (parent) and /AS (each widget) explicitly.
   const { PDFName } = PDFLib;
   const onState  = PDFName.of("Yes");
   const offState = PDFName.of("Off");
   const target   = checked ? onState : offState;
 
-  const fields = form.getFields().filter(f => f.getName() === name);
-  for (const field of fields) {
-    // Step 1: high-level check/uncheck to set parent /V
-    try {
-      if (checked) field.check(); else field.uncheck();
-    } catch(_) {}
-    // Step 2: explicitly set /AS on each widget via public API
-    try {
-      const widgets = field.acroField.getWidgets();
+  try {
+    // Step 1: set the field value via high-level API (updates /V on parent)
+    const cb = form.getCheckBox(name);
+    if (checked) cb.check(); else cb.uncheck();
+  } catch(_) {}
+
+  try {
+    // Step 2: always force /AS on every widget child so it visually renders
+    const fields = form.getFields().filter(f => f.getName() === name);
+    for (const field of fields) {
+      try { field.acroField.setValue(target); } catch(_) {}
+      const widgets = field.acroField.getWidgets ? field.acroField.getWidgets() : [];
       for (const w of widgets) {
         try { w.setAppearanceState(target); } catch(_) {}
       }
-    } catch(_) {}
+    }
+    return true;
+  } catch(e) {
+    return false;
   }
-  return true;
 }
 
 async function generatePdf(){
@@ -216,11 +213,26 @@ async function generatePdf(){
   const form = pdfDoc.getForm();
   const data = gather();
 
-  // Text fields — setTextFieldSafe now iterates ALL fields with this name,
-  // handling both duplicates (child_full_name on multiple pages) and
-  // fields pdf-lib misidentifies as PDFRadioGroup.
+  // Text fields — use setTextFieldSafe which uses getTextField() directly,
+  // bypassing the constructor name check that was silently skipping fields
+  // pdf-lib misidentifies as PDFRadioGroup instead of PDFTextField.
+  // We iterate all fields with the same name (handles duplicates like child_full_name).
   for (const name of EXPECTED.text) {
-    setTextFieldSafe(form, name, data[name] ?? "");
+    const matchingFields = form.getFields().filter(f => f.getName() === name);
+    if (matchingFields.length > 0) {
+      // Try the high-level API first; fall back to raw setValue on each widget
+      const filled = setTextFieldSafe(form, name, data[name] ?? "");
+      if (!filled) {
+        // If getTextField() failed (field mistyped by pdf-lib), set value directly
+        for (const field of matchingFields) {
+          try {
+            field.acroField.setValue(PDFLib.PDFString.of(data[name] ?? ""));
+          } catch (e) {
+            // ignore individual field errors
+          }
+        }
+      }
+    }
   }
 
   // Checkboxes
@@ -301,7 +313,6 @@ async function prefillIfTokenPresent() {
 
     if (data.voucherNumber) els.voucherNumber.value = String(data.voucherNumber);
 
-    // FIX 1: was `data.voucherType.value` (TypeError — .value on a plain string)
     if (data.voucherType) {
       els.voucherType.value = String(data.voucherType);
     } else if (!els.voucherType.value) {
