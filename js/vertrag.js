@@ -123,8 +123,9 @@ els.btnReset.addEventListener("click", () => {
   }
   els.startDate.value = todayDE();
 
-  els.consentMail.checked = false;
-  for (const r of ["signalYes","signalNo","medicalYes","medicalNo","listsYes","listsNo","photosYes","photosNo","bookYes","bookNo"]) els[r].checked = false;
+  for (const r of ["mailYes","mailNo","signalYes","signalNo","medicalYes","medicalNo","listsYes","listsNo","photosYes","photosNo","bookYes","bookNo"]) {
+    els[r].checked = false;
+  }
 
   setStatus("Felder geleert.");
 });
@@ -278,7 +279,7 @@ async function prefillIfTokenPresent() {
 
     if (data.voucherNumber) els.voucherNumber.value = String(data.voucherNumber);
 
-    if (data.voucherType.value) {
+    if (data.voucherType) {
       els.voucherType.value = String(data.voucherType);
     } else if (!els.voucherType.value) {
       els.voucherType.value = "Ganztagsplatz";
