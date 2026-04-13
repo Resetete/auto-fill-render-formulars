@@ -117,6 +117,7 @@ function gather(){
   };
 }
 
+// FIX 2: added "mailYes" and "mailNo" to the reset loop, removed non-existent "consentMail"
 els.btnReset.addEventListener("click", () => {
   for (const id of ["startDate","childFullName","childBirthdate","childFullAddress","voucherDate","voucherNumber","voucherType","voucherMinH","voucherMaxH","parent1","parent2"]) {
     els[id].value = "";
@@ -168,36 +169,31 @@ async function loadTemplateAndInspect(){
 }
 
 function setTextFieldSafe(form, name, value){
-  // There are multiple independent field entries with the same name (e.g. child_full_name
-  // appears on several pages as separate AcroForm fields, not as one field with many widgets).
-  // getTextField() only finds the first — we must iterate all and set each one directly.
-  let anySet = false;
-  const { PDFString } = PDFLib;
+  // child_full_name has 10 separate independent field entries (one per page occurrence).
+  // pdf-lib's getTextField() only finds the first — we iterate ALL matching fields
+  // and set /V directly on both the field object and its widget child.
+  const { PDFString, PDFName } = PDFLib;
+  const strVal = PDFString.of(value ?? "");
   const allFields = form.getFields().filter(f => f.getName() === name);
   for (const field of allFields) {
     try {
-      // High-level setText works when pdf-lib recognises it as PDFTextField
-      field.setText(value ?? "");
-      anySet = true;
-    } catch (_) {
-      try {
-        // Fallback: set /V directly on the acroField object
-        field.acroField.setValue(PDFString.of(value ?? ""));
-        // Also set /V on each widget child (some PDFs store it there)
-        const widgets = field.acroField.getWidgets ? field.acroField.getWidgets() : [];
-        for (const w of widgets) {
-          try { w.setValue(PDFString.of(value ?? "")); } catch(__) {}
-        }
-        anySet = true;
-      } catch (e2) {}
-    }
+      // Set /V on the parent field object
+      field.acroField.dict.set(PDFName.of("V"), strVal);
+      // Set /V on each widget child (where some viewers read the value from)
+      const widgets = field.acroField.getWidgets();
+      for (const w of widgets) {
+        try { w.dict.set(PDFName.of("V"), strVal); } catch(_) {}
+      }
+    } catch(e) {}
   }
-  return anySet;
+  return allFields.length > 0;
 }
 
 function checkBoxSafe(form, name, checked){
-  // These checkboxes store state on the WIDGET child, not the parent field.
-  // We must set both /V and /AS directly on each widget object.
+  // Each checkbox is a parent field + 1 widget child.
+  // The visual tick is controlled by /AS on the WIDGET (not the parent).
+  // /V also lives on the widget (parent /V is None in this PDF).
+  // We set /V and /AS directly on the widget's dict.
   const { PDFName } = PDFLib;
   const onState  = PDFName.of("Yes");
   const offState = PDFName.of("Off");
@@ -205,15 +201,16 @@ function checkBoxSafe(form, name, checked){
 
   const fields = form.getFields().filter(f => f.getName() === name);
   for (const field of fields) {
-    // Set /V on the parent field
-    try { field.acroField.setValue(target); } catch(_) {}
-
-    // Set /V and /AS on every widget child — this is where the visual state lives
-    const widgets = field.acroField.getWidgets ? field.acroField.getWidgets() : [];
-    for (const w of widgets) {
-      try { w.dict.set(PDFName.of("V"),  target); } catch(_) {}
-      try { w.dict.set(PDFName.of("AS"), target); } catch(_) {}
-    }
+    // Also set /V on the parent for completeness
+    try { field.acroField.dict.set(PDFName.of("V"), target); } catch(_) {}
+    // Set /V and /AS on each widget child — this is what controls rendering
+    try {
+      const widgets = field.acroField.getWidgets();
+      for (const w of widgets) {
+        w.dict.set(PDFName.of("AS"), target);
+        w.dict.set(PDFName.of("V"),  target);
+      }
+    } catch(e) {}
   }
   return true;
 }
@@ -308,6 +305,7 @@ async function prefillIfTokenPresent() {
 
     if (data.voucherNumber) els.voucherNumber.value = String(data.voucherNumber);
 
+    // FIX 1: was `data.voucherType.value` (TypeError — .value on a plain string)
     if (data.voucherType) {
       els.voucherType.value = String(data.voucherType);
     } else if (!els.voucherType.value) {
