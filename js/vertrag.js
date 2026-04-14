@@ -205,8 +205,23 @@ async function generatePdf(){
   }
 
   // Checkboxes
+  // for (const name of EXPECTED.check) {
+  //   checkBoxSafe(form, name, !!data[name]);
+  // }
+
+  // Checkboxes
   for (const name of EXPECTED.check) {
     checkBoxSafe(form, name, !!data[name]);
+    const fields = form.getFields().filter(f => f.getName() === name);
+    console.log(`Checkbox "${name}":`, fields.length, "Felder gefunden, Wert:", data[name]);
+    for (const field of fields) {
+      console.log(`  - Typ: ${field.constructor.name}, Aktueller Wert: ${field.getValue()}`);
+      if (field.constructor.name === "PDFCheckBox") {
+        const checked = !!data[name];
+        console.log(`  - Soll gesetzt werden auf: ${checked}`);
+        if (checked) field.check(); else field.uncheck();
+      }
+    }
   }
 
   // Flatten so the PDF is "final" for printing/signing
