@@ -180,16 +180,46 @@ function setTextFieldSafe(form, name, value){
   return count > 0;
 }
 
-function checkBoxSafe(form, name, checked){
-  // The PDF template now has /V and /AS properly initialised to /Off on all
-  // checkbox widgets, so pdf-lib's standard check()/uncheck() works correctly.
+function checkBoxSafe(form, name, checked) {
+  const { PDFName } = PDFLib;
+  const onState = PDFName.of("Yes");
+  const offState = PDFName.of("Off");
+  const target = checked ? onState : offState;
+
   try {
+    // 1. Versuche, die Checkbox direkt zu setzen
     const cb = form.getCheckBox(name);
-    if (checked) cb.check(); else cb.uncheck();
-    return true;
-  } catch(e) {
+    if (checked) {
+      cb.check();
+    } else {
+      cb.uncheck();
+    }
+  } catch (e) {
+    console.log(`Fehler beim direkten Setzen der Checkbox "${name}":`, e.message);
+  }
+
+  try {
+    // 2. Finde alle Felder mit dem Namen und setze Wert + Appearance State
+    const fields = form.getFields().filter(f => f.getName() === name);
+    for (const field of fields) {
+      try {
+        // Setze den Wert des AcroFields
+        if (field.acroField) {
+          field.acroField.setValue(target);
+          // Setze den Appearance State direkt über das AcroField
+          if (field.acroField.setAppearanceState) {
+            field.acroField.setAppearanceState(target);
+          }
+        }
+      } catch (e) {
+        console.log(`Fehler beim Setzen des Feldes "${name}":`, e.message);
+      }
+    }
+  } catch (e) {
+    console.log(`Fehler beim Bearbeiten der Checkbox "${name}":`, e.message);
     return false;
   }
+  return true;
 }
 
 async function generatePdf(){
@@ -202,24 +232,20 @@ async function generatePdf(){
   // fields pdf-lib misidentifies as PDFRadioGroup.
   for (const name of EXPECTED.text) {
     setTextFieldSafe(form, name, data[name] ?? "");
-  }
-
-  // Checkboxes
-  // for (const name of EXPECTED.check) {
-  //   checkBoxSafe(form, name, !!data[name]);
-  // }
+  } 
 
   // Checkboxes
   for (const name of EXPECTED.check) {
-    checkBoxSafe(form, name, !!data[name]);
     const fields = form.getFields().filter(f => f.getName() === name);
     console.log(`Checkbox "${name}":`, fields.length, "Felder gefunden, Wert:", data[name]);
     for (const field of fields) {
-      console.log(`  - Typ: ${field.constructor.name}, Aktueller Wert: ${field.getValue()}`);
-      if (field.constructor.name === "PDFCheckBox") {
-        const checked = !!data[name];
-        console.log(`  - Soll gesetzt werden auf: ${checked}`);
-        if (checked) field.check(); else field.uncheck();
+      console.log(`  - Typ: ${field.constructor.name}, Read-only: ${field.isReadOnly ? field.isReadOnly() : "N/A"}`);
+      if (field.acroField) {
+        console.log(`  - AcroField Value VOR dem Setzen: ${field.acroField.getValue ? field.acroField.getValue() : "N/A"}`);
+      }
+      checkBoxSafe(form, name, !!data[name]);
+      if (field.acroField) {
+        console.log(`  - AcroField Value NACH dem Setzen: ${field.acroField.getValue ? field.acroField.getValue() : "NACH dem Setzen undefined"}`);
       }
     }
   }
