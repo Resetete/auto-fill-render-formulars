@@ -187,7 +187,7 @@ function checkBoxSafe(form, name, checked) {
   const target = checked ? onState : offState;
 
   try {
-    // 1. Versuche, die Checkbox direkt zu setzen
+    // 1. try to directly set the Checkboxes
     const cb = form.getCheckBox(name);
     if (checked) {
       cb.check();
@@ -196,28 +196,6 @@ function checkBoxSafe(form, name, checked) {
     }
   } catch (e) {
     console.log(`Fehler beim direkten Setzen der Checkbox "${name}":`, e.message);
-  }
-
-  try {
-    // 2. Finde alle Felder mit dem Namen und setze Wert + Appearance State
-    const fields = form.getFields().filter(f => f.getName() === name);
-    for (const field of fields) {
-      try {
-        // Setze den Wert des AcroFields
-        if (field.acroField) {
-          field.acroField.setValue(target);
-          // Setze den Appearance State direkt über das AcroField
-          if (field.acroField.setAppearanceState) {
-            field.acroField.setAppearanceState(target);
-          }
-        }
-      } catch (e) {
-        console.log(`Fehler beim Setzen des Feldes "${name}":`, e.message);
-      }
-    }
-  } catch (e) {
-    console.log(`Fehler beim Bearbeiten der Checkbox "${name}":`, e.message);
-    return false;
   }
   return true;
 }
@@ -237,16 +215,8 @@ async function generatePdf(){
   // Checkboxes
   for (const name of EXPECTED.check) {
     const fields = form.getFields().filter(f => f.getName() === name);
-    console.log(`Checkbox "${name}":`, fields.length, "Felder gefunden, Wert:", data[name]);
     for (const field of fields) {
-      console.log(`  - Typ: ${field.constructor.name}, Read-only: ${field.isReadOnly ? field.isReadOnly() : "N/A"}`);
-      if (field.acroField) {
-        console.log(`  - AcroField Value VOR dem Setzen: ${field.acroField.getValue ? field.acroField.getValue() : "N/A"}`);
-      }
       checkBoxSafe(form, name, !!data[name]);
-      if (field.acroField) {
-        console.log(`  - AcroField Value NACH dem Setzen: ${field.acroField.getValue ? field.acroField.getValue() : "NACH dem Setzen undefined"}`);
-      }
     }
   }
 
