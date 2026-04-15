@@ -180,16 +180,24 @@ function setTextFieldSafe(form, name, value){
   return count > 0;
 }
 
-function checkBoxSafe(form, name, checked){
-  // The PDF template now has /V and /AS properly initialised to /Off on all
-  // checkbox widgets, so pdf-lib's standard check()/uncheck() works correctly.
+function checkBoxSafe(form, name, checked) {
+  const { PDFName } = PDFLib;
+  const onState = PDFName.of("Yes");
+  const offState = PDFName.of("Off");
+  const target = checked ? onState : offState;
+
   try {
+    // 1. try to directly set the Checkboxes
     const cb = form.getCheckBox(name);
-    if (checked) cb.check(); else cb.uncheck();
-    return true;
-  } catch(e) {
-    return false;
+    if (checked) {
+      cb.check();
+    } else {
+      cb.uncheck();
+    }
+  } catch (e) {
+    console.log(`Fehler beim direkten Setzen der Checkbox "${name}":`, e.message);
   }
+  return true;
 }
 
 async function generatePdf(){
@@ -202,25 +210,13 @@ async function generatePdf(){
   // fields pdf-lib misidentifies as PDFRadioGroup.
   for (const name of EXPECTED.text) {
     setTextFieldSafe(form, name, data[name] ?? "");
-  }
-
-  // Checkboxes
-  // for (const name of EXPECTED.check) {
-  //   checkBoxSafe(form, name, !!data[name]);
-  // }
+  } 
 
   // Checkboxes
   for (const name of EXPECTED.check) {
-    checkBoxSafe(form, name, !!data[name]);
     const fields = form.getFields().filter(f => f.getName() === name);
-    console.log(`Checkbox "${name}":`, fields.length, "Felder gefunden, Wert:", data[name]);
     for (const field of fields) {
-      console.log(`  - Typ: ${field.constructor.name}, Aktueller Wert: ${field.getValue()}`);
-      if (field.constructor.name === "PDFCheckBox") {
-        const checked = !!data[name];
-        console.log(`  - Soll gesetzt werden auf: ${checked}`);
-        if (checked) field.check(); else field.uncheck();
-      }
+      checkBoxSafe(form, name, !!data[name]);
     }
   }
 

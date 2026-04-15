@@ -25,3 +25,7 @@ Die App kann über GitHub Pages betrieben werden.
 
 > Technische und interne Details (Konfiguration, Feldmapping, Wartung)
 > sind in der internen Dokumentation (`ADMIN.md`) beschrieben.
+
+To run the app locally, start a local server 
+`python3 -m http.server 8000`
+and visit `http://localhost:8000/vertrag.html`
